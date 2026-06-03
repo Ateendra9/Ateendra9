@@ -1,1 +1,34 @@
+name: updates
 
+on:
+  schedule:
+    - cron: '30 3 * * *'
+  workflow_dispatch: 
+
+jobs:
+  auto_commit:
+    runs-on: ubuntu-latest
+    
+    # Required permission to push code back to the repo
+    permissions:
+      contents: write 
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        
+      - name: Update Activity Log
+        run: |
+          echo "Activity logged on $(date)" >> activity.log
+          
+      - name: Commit and Push
+        run: |
+          # Set up the bot's git identity
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          
+          # Stage, commit, and push the changes
+          git add activity.log
+          # Only commit if there are actually changes to avoid workflow errors
+          git diff --quiet && git diff --staged --quiet || git commit -m "update"
+          git push
